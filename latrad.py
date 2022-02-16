@@ -47,7 +47,7 @@ path_figures = "/Volumes/GoogleDrive/My Drive/Cryologger/Python/latrad/"
 dpi = 300
 
 # Parameters
-lat = 82.3725  # Latitude
+lat = 69.3725  # Latitude
 lon = -81.8246  # Longitude
 solar_const = 1367.0  # Solar constant (W/m^2)
 atm_trans = 0.84  # Atmospheric transmissivity
