@@ -47,18 +47,16 @@ path_figures = "/Volumes/GoogleDrive/My Drive/Cryologger/Python/latrad/"
 dpi = 300
 
 # Parameters
-lat = 69.3725  # the latitude
-lon = -81.8246  # longitude
-
-solar_const = 1367.0  # W/m2
-atm_trans = 0.84  # Aatmospheric transmissivity
+lat = 82.3725  # Latitude
+lon = -81.8246  # Longitude
+solar_const = 1367.0  # Solar constant (W/m^2)
+atm_trans = 0.84  # Atmospheric transmissivity
 
 # Start and end dates
-dt1 = datetime(2022, 1, 1)  # Start time
-dt2 = datetime(2022, 12, 31)  # End time
-
-dt1 = pd.to_datetime("2022-01-01 00:00")
-dt2 = pd.to_datetime("2022-12-31 23:00")
+# dt1 = datetime(2022, 1, 1)  # Start time
+# dt2 = datetime(2022, 12, 31)  # End time
+dt1 = pd.to_datetime("2022-07-01 00:00")
+dt2 = pd.to_datetime("2022-08-31 23:00")
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -130,7 +128,7 @@ def h2time(h):
 
 def getRise(lat, doy):
     # Get sunrise solar time
-   return  h2time(getH(lat, getDelta(doy)))
+    return h2time(getH(lat, getDelta(doy)))
 
 
 def getSet(lat, doy):
@@ -148,20 +146,22 @@ def getNumberOfDaysBelowThreshold(lat, threshold):
     # sum(getDaylength(lat,1:366) <= threshold)
     return
 
+
 # -----------------------------------------------------------------------------
 # Run the code
 # -----------------------------------------------------------------------------
 
 # Create a vector of date/times - start and stop when you want
 dts = pd.date_range(start=dt1, end=dt2, freq="H")
-doy = dts.day_of_year.values # Get day of year
-hod = dts.hour.values # Get hour of day
+doy = dts.day_of_year.values  # Get day of year
+hod = dts.hour.values  # Get hour of day
 delta = getDelta(doy)  # Solar declination
 h = time2h(hod)  # Hour angle (Note: 0 and 24 issues?)
 Z = getZ(lat, getDelta(doy))
 Kex = getKex(Z, solar_const)
 Kdn = getKdn(Kex, Z, atm_trans)
 
+# Pandas version
 # Create an empty dataframe
 df = pd.DataFrame()
 df["dts"] = pd.date_range(start=dt1, end=dt2, freq="H")
@@ -183,7 +183,7 @@ df2["doy"] = pd.date_range(start=dt1, end=dt2, freq="D").day_of_year.values
 df2["day_length"] = getDaylength(lat, doy)
 
 # Count number of days with less than a specified number of daylight hours
-threshold = 5 # Daylight hour threshold
+threshold = 5  # Daylight hour threshold
 df2[df2["day_length"] <= threshold].count()
 
 # -----------------------------------------------------------------------------
@@ -193,13 +193,13 @@ df2[df2["day_length"] <= threshold].count()
 # Plot interpolation alongside total number of observations
 fig, ax = plt.subplots(figsize=(12, 6))
 ax.grid(ls="dotted")
-sns.scatterplot(x="dts", y="Kdn", data=df)
+sns.lineplot(x="dts", y="Kdn", data=df)
 sns.despine()
-ax.set(ylabel="Downwelling shortwave (W/m2)", xlabel="Date")
+ax.set(ylabel="Downwelling shortwave (W/m^2)", xlabel="Date")
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
-plt.title('Igloolik, Nunavut')
-fig.savefig(path_figures + "insolation.png", dpi=dpi, transparent=False, bbox_inches="tight")
+plt.title("Igloolik, Nunavut")
+fig.savefig(path_figures + "shortwave.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
 # Day length
 fig, ax = plt.subplots(figsize=(12, 6))
@@ -207,5 +207,5 @@ ax.grid(ls="dotted")
 sns.lineplot(x="doy", y="day_length", data=df2)
 sns.despine()
 ax.set(xlabel="Day of Year", ylabel="Day Length (h)")
-plt.title('Igloolik, Nunavut')
+plt.title("Igloolik, Nunavut")
 fig.savefig(path_figures + "day_length.png", dpi=dpi, transparent=False, bbox_inches="tight")
