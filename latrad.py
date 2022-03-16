@@ -55,8 +55,8 @@ atm_trans = 0.84  # Atmospheric transmissivity
 # Start and end dates
 # dt1 = datetime(2022, 1, 1)  # Start time
 # dt2 = datetime(2022, 12, 31)  # End time
-dt1 = pd.to_datetime("2022-07-01 00:00")
-dt2 = pd.to_datetime("2022-08-31 23:00")
+dt1 = pd.to_datetime("2022-01-01 00:00")
+dt2 = pd.to_datetime("2022-12-31 23:00")
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -173,6 +173,8 @@ df["Z"] = getZ(lat, getDelta(doy))
 df["Kex"] = getKex(Z, solar_const)
 df["Kdn"] = getKdn(Kex, Z, atm_trans)
 
+df["Z_invert"] = 180 - df["Z"]
+
 # Create date range array
 doy = pd.date_range(start=dt1, end=dt2, freq="D").day_of_year.values
 
@@ -187,8 +189,20 @@ threshold = 5  # Daylight hour threshold
 df2[df2["day_length"] <= threshold].count()
 
 # -----------------------------------------------------------------------------
-# Plot
+# Plots
 # -----------------------------------------------------------------------------
+
+# Plot interpolation alongside total number of observations
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.grid(ls="dotted")
+sns.lineplot(x="dts", y="Z_invert", data=df)
+sns.despine()
+ax.set(ylabel="Solar zenith angle (°)", xlabel=None)
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+plt.title("Igloolik, Nunavut")
+fig.savefig(path_figures + "Z.png", dpi=dpi, transparent=False, bbox_inches="tight")
+
 
 # Plot interpolation alongside total number of observations
 fig, ax = plt.subplots(figsize=(12, 6))
@@ -209,3 +223,19 @@ sns.despine()
 ax.set(xlabel="Day of Year", ylabel="Day Length (h)")
 plt.title("Igloolik, Nunavut")
 fig.savefig(path_figures + "day_length.png", dpi=dpi, transparent=False, bbox_inches="tight")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
