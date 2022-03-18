@@ -173,7 +173,7 @@ df["Z"] = getZ(lat, getDelta(doy))
 df["Kex"] = getKex(Z, solar_const)
 df["Kdn"] = getKdn(Kex, Z, atm_trans)
 
-df["Z_invert"] = 180 - df["Z"]
+df["Z_invert"] = 90 - df["Z"]
 
 # Create date range array
 doy = pd.date_range(start=dt1, end=dt2, freq="D").day_of_year.values
@@ -195,7 +195,7 @@ df2[df2["day_length"] <= threshold].count()
 # Plot interpolation alongside total number of observations
 fig, ax = plt.subplots(figsize=(12, 6))
 ax.grid(ls="dotted")
-sns.lineplot(x="dts", y="Z_invert", data=df)
+sns.lineplot(x="dts", y="Z_invert", data=df, alpha=0.75)
 sns.despine()
 ax.set(ylabel="Solar zenith angle (°)", xlabel=None)
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
