@@ -197,11 +197,11 @@ fig, ax = plt.subplots(figsize=(12, 6))
 ax.grid(ls="dotted")
 sns.lineplot(x="dts", y="Z_invert", data=df, alpha=0.75)
 sns.despine()
-ax.set(ylabel="Solar zenith angle (°)", xlabel=None)
+ax.set(ylabel="Solar elevation angle (°)", xlabel=None)
 ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
 plt.title("Igloolik, Nunavut")
-fig.savefig(path_figures + "Z.png", dpi=dpi, transparent=False, bbox_inches="tight")
+fig.savefig(path_figures + "Z_elev.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
 
 # Plot interpolation alongside total number of observations
