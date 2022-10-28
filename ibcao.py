@@ -42,7 +42,7 @@ stamen_terrain = cimgt.Stamen("terrain-background")
 plt.figure(figsize=(10,10))
 ax = plt.axes(projection=ccrs.NorthPolarStereo(true_scale_latitude=75))
 #ax.set_extent([-80, -60, 75, 82.5])
-cs = plt.contour(ds0.x, ds0.y, ds0.z, 20, zorder=1)
+cs = plt.contour(ds0.x, ds0.y, ds0.z, 20, zorder=1, cmap="Blues", linewidths=0.5)
 #cbar = plt.colorbar(cs, location="right")
 ax.gridlines(ls="dotted")
 ax.coastlines()
@@ -65,7 +65,7 @@ plt.savefig(path_data + "test5.png", dpi=300, transparent=False, bbox_inches='ti
 plt.figure(figsize=(10,10))
 ax = plt.axes(projection=ccrs.Orthographic(-70,75))
 ax.set_extent([-85, -50, 60, 82.5])
-cs = plt.contourf(ds.x, ds.y, ds.z, 20, transform=ccrs.NorthPolarStereo(true_scale_latitude=75)) # Specifiy true scale latitude to avoid misalignment
+cs = plt.contour(ds.x, ds.y, ds.z, 20, transform=ccrs.NorthPolarStereo(true_scale_latitude=75)) # Specifiy true scale latitude to avoid misalignment
 ax.coastlines()
 gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                   color="black", alpha=0.25, linestyle="dotted",
