@@ -21,22 +21,23 @@ from cartopy.mpl.ticker import (LongitudeFormatter,
                                 LongitudeLocator,
                                 LatitudeLocator)
 
-# Path
+# Path to IBCAO 16 tiles (adjust as needed)
 path_data = "/Users/adam/Downloads/IBCAO_v4_2_200m_16_tiled_netCDF/"
 
-# Load data
+# Load IBCAO single complete bathymetric grid with 400mx400m grid cell spacing
 ds = xr.open_dataset("/Users/adam/Downloads/IBCAO_v4_2_400m.nc")
 
-# Load data with slicing
+# Load IBCAO data with slicing
 ds = xr.open_dataset("/Users/adam/Downloads/IBCAO_v4_2_400m.nc").sel(x=slice(-2902500, 0),y=slice(-2902500, 500000))
+
+# Get min z values
 ds.z.values.min()
 
 # Select underwater values only
 ds0 = ds.where(ds.z.values <= 0) 
 
-# Create a Stamen terrain background instance
+# Optional: Create a Stamen terrain background instance
 stamen_terrain = cimgt.Stamen("terrain-background")
-
 
 # North Polar Stereo map 
 plt.figure(figsize=(10,10))
@@ -60,8 +61,7 @@ ax.gridlines(ls="dotted")
 ax.coastlines()
 plt.savefig(path_data + "test5.png", dpi=300, transparent=False, bbox_inches='tight')
 
-
-# Orthographic map to illustrate misalignment
+# Orthographic map with custom gridlines
 plt.figure(figsize=(10,10))
 ax = plt.axes(projection=ccrs.Orthographic(-70,75))
 ax.set_extent([-85, -50, 60, 82.5])
