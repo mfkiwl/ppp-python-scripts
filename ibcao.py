@@ -65,8 +65,8 @@ plt.savefig(path_data + "test5.png", dpi=300, transparent=False, bbox_inches='ti
 plt.figure(figsize=(10,10))
 ax = plt.axes(projection=ccrs.Orthographic(-70,75))
 ax.set_extent([-85, -50, 60, 82.5])
-cs = plt.contour(ds.x, ds.y, ds.z, 20, transform=ccrs.NorthPolarStereo(true_scale_latitude=75)) # Specifiy true scale latitude to avoid misalignment
-ax.coastlines()
+cs = plt.contour(ds0.x, ds0.y, ds0.z, 20, zorder=1, cmap="Blues", linewidths=0.5, transform=ccrs.NorthPolarStereo(true_scale_latitude=75)) # Specifiy true scale latitude to avoid misalignment
+ax.add_feature(coast)
 gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                   color="black", alpha=0.25, linestyle="dotted",
                   x_inline=False, y_inline=False)
@@ -77,4 +77,4 @@ gl.xlocator = mticker.FixedLocator(np.arange(-180,0,5))
 gl.ylocator = mticker.FixedLocator(np.arange(40,90,2))
 gl.xformatter = LongitudeFormatter()
 gl.yformatter = LatitudeFormatter()
-plt.savefig(path_data + "misalignmentx.png", dpi=300, transparent=False, bbox_inches='tight')
+plt.savefig(path_data + "aoi3.png", dpi=200, transparent=False, bbox_inches='tight')
