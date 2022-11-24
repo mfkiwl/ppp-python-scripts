@@ -10,22 +10,24 @@ latrad.py - Calculate sun angles and flux density based on latitude
 Equations from Appendix A in Oke, TR 1987. Boundary Layer Climates
 Due to refraction, Kdown at low solar angles are not correct (Z<80degrees)
 
-Kex = Shortwave Radiation at the top of the atmosphere
-Kdn = Direct Shortwave Solar Radiation on a horizontal surface
-m = path length correction factor
-Z = the zenith angle
-delta = solar declination
-h = hour angle
-omega = azimuth angle
+    Parameters
+    ----------
+    Kex     = Shortwave Radiation at the top of the atmosphere
+    Kdn     = Direct Shortwave Solar Radiation on a horizontal surface
+    m       = path length correction factor
+    Z       = the zenith angle
+    delta   = solar declination
+    h       = hour angle
+    omega   = azimuth angle
 
 civil twilight = 6deg below horizon
 astronomical twilight = 18deg below horizon
+
 Shortwave Radiation is 150 to 3000 nm
 
 Improvments to the code could be made
 See: https://desktop.arcgis.com/en/arcmap/10.3/tools/spatial-analyst-toolbox/how-solar-radiation-is-calculated.htm
 # Also, can include calculations for solar panel power. See TODO below
-
 
 """
 
@@ -41,22 +43,10 @@ sns.set_theme(style="ticks")
 sns.set_context("talk")  # Options: talk, paper, poster
 
 # Path to figures
-path_figures = "/Volumes/GoogleDrive/My Drive/Cryologger/Python/latrad/"
+path_figures = "/Users/adam/Documents/GitHub/Python-Scripts/figures/"
 
 # Figure DPI
 dpi = 300
-
-# Parameters
-lat = 69.3725  # Latitude
-lon = -81.8246  # Longitude
-solar_const = 1367.0  # Solar constant (W/m^2)
-atm_trans = 0.84  # Atmospheric transmissivity
-
-# Start and end dates
-# dt1 = datetime(2022, 1, 1)  # Start time
-# dt2 = datetime(2022, 12, 31)  # End time
-dt1 = pd.to_datetime("2022-01-01 00:00")
-dt2 = pd.to_datetime("2022-12-31 23:00")
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -103,7 +93,7 @@ def getH(lat, delta):
 
 
 def getKex(Z, solarconst):
-    # Determine the shortwave flux at the top of atm.
+    # Determine the shortwave flux at the top of the atmosphere
     Kex = solarconst * np.cos(np.radians(Z))
     Kex[np.where(Kex < 0)] = 0
     return Kex
@@ -111,7 +101,7 @@ def getKex(Z, solarconst):
 
 def getKdn(Kex, Z, atmtrans):
     # Determine the shortwave flux at the surface of Earth
-    m = 1 / np.cos(np.radians(Z))  # path length correction factor
+    m = 1 / np.cos(np.radians(Z)) # Path length correction factor
     Kdn = Kex * atmtrans ** m  # Shortwave flux at surface on the flat ground
     return Kdn
 
@@ -148,15 +138,53 @@ def getNumberOfDaysBelowThreshold(lat, threshold):
 
 
 # -----------------------------------------------------------------------------
+# Parameters
+# -----------------------------------------------------------------------------
+
+# Arctic Bay
+# Qakuqtaqtujut	
+lat = 73.5879344	
+lon = -83.6381719
+
+# Pullataujaq	
+lat = 73.523998	
+lon = -85.484422
+
+# Igloolik
+lat = 69.3725
+lon = -81.8246
+
+# Constants
+solar_const = 1367.0  # Solar constant (W/m^2)
+atm_trans = 0.84  # Atmospheric transmissivity
+
+# Start and end dates
+# dt1 = datetime(2022, 1, 1)  # Start time
+# dt2 = datetime(2022, 12, 31)  # End time
+dt1 = pd.to_datetime("2022-01-01 00:00")
+dt2 = pd.to_datetime("2022-12-31 23:00")
+
+
+# -----------------------------------------------------------------------------
 # Run the code
 # -----------------------------------------------------------------------------
 
 # Create a vector of date/times - start and stop when you want
 dts = pd.date_range(start=dt1, end=dt2, freq="H")
-doy = dts.day_of_year.values  # Get day of year
-hod = dts.hour.values  # Get hour of day
-delta = getDelta(doy)  # Solar declination
-h = time2h(hod)  # Hour angle (Note: 0 and 24 issues?)
+
+# Get day of year
+doy = dts.day_of_year.values
+
+# Get hour of day
+hod = dts.hour.values
+
+# Solar declination
+delta = getDelta(doy)  
+
+# Hour angle (Note: 0 and 24 issues?)
+h = time2h(hod)
+
+# Calculate parameters
 Z = getZ(lat, getDelta(doy))
 Kex = getKex(Z, solar_const)
 Kdn = getKdn(Kex, Z, atm_trans)
@@ -223,19 +251,3 @@ sns.despine()
 ax.set(xlabel="Day of Year", ylabel="Day Length (h)")
 plt.title("Igloolik, Nunavut")
 fig.savefig(path_figures + "day_length.png", dpi=dpi, transparent=False, bbox_inches="tight")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
