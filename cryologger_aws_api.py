@@ -47,31 +47,36 @@ path_figures = "/Users/adam/Documents/GitHub/cryologger-automatic-weather-statio
 
 
 # -----------------------------------------------------------------------------
-# Load and prepare data
+# Load data
 # -----------------------------------------------------------------------------
+
+# API key
+headers = {'x-api-key': "fZ9d7bKQB69Yur74Xmz7i8Rf7o24kpga4PpnGxBF"}
 
 # Station UID
 # ALW	73.581863	-83.654776	Arctic Bay, Nunavut	Qakuqtaqtujut
 # MPC	73.4802	    -85.6052	Arctic Bay, Nunavut	Pullataujaq
-headers = {'x-api-key': "fZ9d7bKQB69Yur74Xmz7i8Rf7o24kpga4PpnGxBF"}
-
-url = "https://api.cryologger.org/aws?uid=NPK"
-response = requests.get(url, headers=headers)
-df = pd.read_json(response.text)
-response.content
-
-
 url = "https://api.cryologger.org/aws?uid=ALW&uid=MPC&records=200000"
 response = requests.get(url, headers=headers)
 df = pd.read_json(response.text)
 
+# Igloolik
+url = "https://api.cryologger.org/aws?uid=OEG&records=1000"
+response = requests.get(url, headers=headers)
+df = pd.read_json(response.text)
+
+# View content
+#response.content
+
+# Output file
+#df.to_csv(path_data + "oeg.csv")
+
+# -----------------------------------------------------------------------------
+# Prepare data
+# -----------------------------------------------------------------------------
+
 # Convert unixtime to datetime
 df["datetime"] = pd.to_datetime(df["unixtime"], unit="s")
-
-# Subset by datetime
-df = df[(df["datetime"] > "2023-01-01 00:00")]
-
-#df = df[(df["datetime"] < "2023-01-28 00:00")]
 
 # Remove 0 s transmit durations
 df.loc[df["transmit_duration"] == 0, "transmit_duration"] = np.nan
@@ -87,29 +92,41 @@ df["wind_gust_speed"] *= 3.6
 df.loc[df["wind_gust_speed"] == 0, "wind_gust_speed"] = np.nan
 
 # -----------------------------------------------------------------------------
+# Subset data
+# -----------------------------------------------------------------------------
+
+# By datetime
+df = df[(df["datetime"] > "2023-01-01 00:00")]
+
+#df = df[(df["datetime"] < "2023-01-28 00:00")]
+
+# -----------------------------------------------------------------------------
 # Plot
 # -----------------------------------------------------------------------------
 
-# Voltage & Temperature
 
+interval = 1
+
+# Voltage & Temperature
 fig, ax = plt.subplots(figsize=(10,5))
 ax.grid(ls="dotted")
 sns.lineplot(x="datetime", y="voltage", data=df, errorbar=None, lw=lw, hue="uid")
 ax.set(xlabel=None, ylabel="Voltage (V)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "voltage.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
 # Temperature Internal (°C)
 fig, ax = plt.subplots(figsize=(10,5))
 ax.grid(ls="dotted")
-sns.lineplot(x="datetime", y="temperature_int", data=df, errorbar=None, lw=lw, hue="uid")
+sns.lineplot(x="datetime", y="temperature_int", data=df, errorbar=None, lw=lw, label="Int")
+sns.lineplot(x="datetime", y="temperature_ext", data=df, errorbar=None, lw=lw, label="Ext")
 ax.set(xlabel=None, ylabel="Temperature (°C)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+ax.xaxis.set_major_locator(mdates.DayLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "temperature_int.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
@@ -120,18 +137,20 @@ sns.lineplot(x="datetime", y="temperature_ext", data=df, errorbar=None, lw=lw, h
 ax.set(xlabel=None, ylabel="Temperature External (°C)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+ax.xaxis.set_major_locator(mdates.DayLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "temperature_ext.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
 # Humidity (%)
 fig, ax = plt.subplots(figsize=(10,5))
 ax.grid(ls="dotted")
-sns.lineplot(x="datetime", y="humidity_ext", data=df, errorbar=None, lw=lw, label="Qakuqtaqtujut")
-ax.set(xlabel=None, ylabel="Humidity External (%)")
+sns.lineplot(x="datetime", y="humidity_int", data=df, errorbar=None, lw=lw, label="Internal")
+sns.lineplot(x="datetime", y="humidity_ext", data=df, errorbar=None, lw=lw, label="External")
+ax.set(xlabel=None, ylabel="Humidity (%)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+#ax.xaxis.set_major_locator(mdates.MonthLocator(interval=interval))
+ax.xaxis.set_major_locator(mdates.DayLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "temperature_ext.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
@@ -142,7 +161,7 @@ sns.lineplot(x="datetime", y="wind_speed", data=df, errorbar=None, lw=lw, hue="u
 ax.set(xlabel=None, ylabel="Wind Speed (km/h)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "wind_speed.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
@@ -153,7 +172,7 @@ sns.lineplot(x="datetime", y="wind_gust_speed", data=df, errorbar=None, lw=lw, h
 ax.set(xlabel=None, ylabel="Wind Gust Speed (km/h)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+#ax.xaxis.set_major_locator(mdates.MonthLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "wind_gust_speed.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
@@ -164,7 +183,7 @@ sns.lineplot(x="datetime", y="wind_direction", data=df, errorbar=None, lw=lw, hu
 ax.set(xlabel=None, ylabel="Wind Direction (°)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "temperature_int.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
@@ -175,18 +194,18 @@ sns.lineplot(x="datetime", y="pitch", data=df, errorbar=None, lw=lw, hue="uid")
 ax.set(xlabel=None, ylabel="Pitch (°)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-#ax.xaxis.set_major_locator(mdates.DayLocator(interval=7)) 
+#ax.xaxis.set_major_locator(mdates.DayLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "pitch.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
 # Roll (°)
 fig, ax = plt.subplots(figsize=(10,5))
 ax.grid(ls="dotted")
-sns.lineplot(x="datetime", y="roll", data=df, errosrbar=None, lw=lw, hue="uid")
+sns.lineplot(x="datetime", y="roll", data=df, errorbar=None, lw=lw, hue="uid")
 ax.set(xlabel=None, ylabel="Roll (°)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.DayLocator(interval=7)) 
+ax.xaxis.set_major_locator(mdates.DayLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "roll.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
@@ -197,25 +216,30 @@ sns.scatterplot(x="datetime", y="transmit_duration", data=df, hue="uid")
 ax.set(xlabel=None, ylabel="Transmit Duration (s)")
 plt.xticks(rotation=45, horizontalalignment="right")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+ax.xaxis.set_major_locator(mdates.DayLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "transmit_duration.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
 # Voltage
 fig, ax = plt.subplots(figsize=(10,5))
 ax.grid(ls="dotted")
-sns.lineplot(x="datetime", y="min", data=df3, errorbar=None, lw=lw, hue="uid")
+sns.lineplot(x="datetime", y="voltage", data=df, errorbar=None, lw=lw, hue="uid")
 ax.set(xlabel=None, ylabel="Voltage Min (V)")
 plt.xticks(rotation=45, horizontalalignment="center")
 ax.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
-ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1)) 
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=interval)) 
 ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), title="Station")
 plt.savefig(path_figures + "voltage_min.png", dpi=dpi, transparent=False, bbox_inches="tight")
 
 
 
-# Add month column
 
+
+
+
+
+
+# Add month column
 df["month"] = df["datetime"].dt.
 df["month"] = pd.to_datetime(df["month"], format='%m').dt.month_name().str.slice(stop=3)
 
